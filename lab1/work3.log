@@ -75,3 +75,4 @@ _ssh
 avahi-autoipd
 bluetooth
 myuser
+uid=1001(u1) gid=1001(u1) группы=1001(u1),1002(g1)
