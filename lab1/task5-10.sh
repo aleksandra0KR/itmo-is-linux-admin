@@ -1,6 +1,6 @@
 #!/bin/bash
 
-useradd u1 -p $(openssl passwd u1) #5
+useradd u1 -p $(openssl passwd 12345678) #5
 
 groupadd g1 #6
 
