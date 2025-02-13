@@ -7,3 +7,5 @@ groupadd g1 #6
 usermod -aG g1 u1 #7 
 
 id u1 >> work3.log
+
+usermod -aG g1 myuser
