@@ -6,8 +6,10 @@ groupadd g1 #6
 
 usermod -aG g1 u1 #7 
 
-id u1 >> work3.log
+id u1 >> work3.log #8
 
-usermod -aG g1 myuser
+usermod -aG g1 myuser #9
 
-cat /etc/group | grep "^g1:*" | awk -F: '{print $4}' >> work3.log
+cat /etc/group | grep "^g1:*" | awk -F: '{print $4}' >> work3.log #10
+
+usermod -s /usr/bin/mc u1 #11 
