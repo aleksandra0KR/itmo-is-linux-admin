@@ -6,4 +6,12 @@ blkid /dev/sdb1 | awk '{print $2}' >> /root/uuid_sdb1
 
 mkfs ext4 -b 40096 /dev/sdb1
 
+
 dumpe2fs /dev/sdb1
+
+
+tune2fs -c 2 -i 2m /dev/sdb1
+
+
+mkdir /mnt/newdisk
+mount /dev/sdb1 /mnt/newdisk
