@@ -1,0 +1,23 @@
+fdisk /dev/sdb
+
+
+blkid /dev/sdb1 | awk '{print $2}' >> /root/uuid_sdb1
+
+
+mkfs ext4 -b 40096 /dev/sdb1
+
+
+dumpe2fs /dev/sdb1
+
+
+tune2fs -c 2 -i 2m /dev/sdb1
+
+
+mkdir /mnt/newdisk
+mount /dev/sdb1 /mnt/newdisk
+
+
+ln -s /mnt/newdisk /root/newdisk_link
+
+
+echo "dev/sdb1 /mnt/newdisk ext4 noexec, noatime 0 2" >> /etc/fstab
