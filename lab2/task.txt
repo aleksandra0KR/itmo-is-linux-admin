@@ -1,0 +1,5 @@
+fdisk /dev/sdb
+
+
+blkid /dev/sdb1 | awk '{print $2}' >> /root/uuid_sdb1
+
