@@ -77,3 +77,8 @@ w
 
 pvcreate /dev/sdc1
 pvcreate /dev/sdd1
+
+#14
+vgcreate vg0 /dev/sdc1 /dev/sdd1
+lvcreate -l 100%FREE vg0 -i 2
+mkfs.ext4 -b 4096 /dev/vg0/lvol0
