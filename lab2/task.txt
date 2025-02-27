@@ -82,3 +82,47 @@ pvcreate /dev/sdd1
 vgcreate vg0 /dev/sdc1 /dev/sdd1
 lvcreate -l 100%FREE vg0 -i 2
 mkfs.ext4 -b 4096 /dev/vg0/lvol0
+
+#15
+mkdir /mnt/vol01
+mount /dev/vg0/lvol0 /mnt/vol01
+echo "/dev/vg0/lvol0 /mnt/vol01 ext4 defaults 0 2" >> /etc/fstab
+
+# 16
+pvdisplay
+vgdisplay
+lvdisplay
+
+# 17
+fdisk /dev/sde
+n
+p
+1
+2048
+enter
+w
+
+pvcreate /dev/sde1
+vgextend vg0 /dev/sde1
+lvextend -i 3 -l 100%VG /dev/vg0/lvol0
+
+#18
+resize2fs /dev/vg0/lvol0
+
+# 19
+pvdisplay
+vgdisplay
+lvdisplay
+
+#20
+apt install nfs-kernel-server
+systemctl enable nfs-server
+systemctl start nfs-server
+
+#21
+echo "/mnt/vol01 10.0.2.0/24(rw,sync,no_root_squash)" >> /etc/exports
+exportfs -ra
+
+#22
+mkdir /var/remotenfs
+mount.nfs 10.0.2.15:/mnt/vol01 /var/remotenfs
