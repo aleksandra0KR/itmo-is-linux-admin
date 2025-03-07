@@ -4,29 +4,29 @@ fdisk /dev/sdb
 #2
 blkid /dev/sdb1 | awk '{print $2}' >> /root/uuid_sdb1
 
-#3
-mkfs ext4 -b 40096 /dev/sdb1
+# 3
+mkfs.ext4 -b 4096 /dev/sdb1
 
-#4
+# 4
 dumpe2fs /dev/sdb1
 
-#5
-tune2fs -c 2 -i 2m /dev/sdb1
+# 5
+tune2fs -i 2m -c 2  /dev/sdb1
 
-#6
+# 6
 mkdir /mnt/newdisk
 mount /dev/sdb1 /mnt/newdisk
 
-#7
+# 7
 ln -s /mnt/newdisk /root/newdisk_link
 
-#8
+# 8
 mkdir /mnt/newdisk/slay
 
-#9
-echo "dev/sdb1 /mnt/newdisk ext4 noexec, noatime 0 2" >> /etc/fstab
+# 9
+echo "UUID=$(cat /root/sdb1_uuid) /mnt/newdisk ext4 noexec,noatime 0 2" >> /etc/fstab
 
-#10
+# 10
 umount /mnt/newdisk
 
 fdisk /dev/sdb
@@ -41,7 +41,7 @@ w
 e2fsck -f /dev/sdb1
 resize2fs /dev/sdb1
 
-#11
+# 11
 e2fsck -n /dev/sdb1
 
 # 12
@@ -49,12 +49,11 @@ fdisk /dev/sdb
 n
 p
 2
-enter
+  -
 +12M
 w
 
 mke2fs -b 4096 -O journal_dev /dev/sdb2
-
 tune2fs -O ^has_journal /dev/sdb1
 tune2fs -j -J device=/dev/sdb2 /dev/sdb1
 
@@ -64,7 +63,7 @@ n
 p
 1
 2048
-enter
+  -
 w
 
 fdisk /dev/sdd
@@ -72,21 +71,21 @@ n
 p
 1
 2048
-enter
+  -
 w
 
 pvcreate /dev/sdc1
 pvcreate /dev/sdd1
 
-#14
-vgcreate vg0 /dev/sdc1 /dev/sdd1
-lvcreate -l 100%FREE vg0 -i 2
-mkfs.ext4 -b 4096 /dev/vg0/lvol0
+# 14
+vgcreate vg01 /dev/sdc1 /dev/sdd1
+lvcreate -l 100%FREE vg01 -i 2
+mkfs.ext4 -b 4096 /dev/vg01/lvol0
 
-#15
+# 15
 mkdir /mnt/vol01
-mount /dev/vg0/lvol0 /mnt/vol01
-echo "/dev/vg0/lvol0 /mnt/vol01 ext4 defaults 0 2" >> /etc/fstab
+mount /dev/vg01/lvol0 /mnt/vol01
+echo "/dev/vg01/lvol0 /mnt/vol01 ext4 defaults 0 2" >> /etc/fstab
 
 # 16
 pvdisplay
@@ -99,27 +98,28 @@ n
 p
 1
 2048
-enter
+  -
 w
 
 pvcreate /dev/sde1
-vgextend vg0 /dev/sde1
-lvextend -i 3 -l 100%VG /dev/vg0/lvol0
+vgextend vg01 /dev/sde1
+lvextend -i 3 -l 100%VG /dev/vg01/lvol0
 
-#18
-resize2fs /dev/vg0/lvol0
+# 18
+
+resize2fs /dev/vg01/lvol0
 
 # 19
 pvdisplay
 vgdisplay
 lvdisplay
 
-#20
+# 20
 apt install nfs-kernel-server
 systemctl enable nfs-server
 systemctl start nfs-server
 
-#21
+# 21
 echo "/mnt/vol01 10.0.2.0/24(rw,sync,no_root_squash)" >> /etc/exports
 exportfs -ra
 
