@@ -49,3 +49,46 @@ wget -P /root/localrepo https://snapshot.debian.org/archive/debian/20240113T1504
 wget -P /root/localrepo https://snapshot.debian.org/archive/debian/20240118T212557Z/pool/main/h/htop/htop_3.3.0-3_amd64.deb
 wget -P /root/localrepo https://snapshot.debian.org/archive/debian/20240129T091021Z/pool/main/h/htop/htop_3.3.0-4_amd64.deb
 wget -P /root/localrepo https://snapshot.debian.org/archive/debian/20250209T210016Z/pool/main/h/htop/htop_3.3.0-5_amd64.deb
+
+#14
+cd /root/localrepo
+dpkg-scanpackages --multiversion . > Packages
+echo "Origin: My Local Repo
+Label: My Local Repo
+Suite: stable
+Version: 1
+Codename: myrepo
+Architectures: amd64
+Components: main
+Description: My local APT repository" >> Release
+
+#15 
+echo "deb [trusted=yes] file:/root/localrepo ./" > /etc/apt/sources.list.d/localrepo.list
+apt update
+
+# 16
+apt-cache policy
+
+# 17
+apt-cache madison htop > task16.log
+
+# 18
+apt install htop=3.2.2-2
+
+#19
+apt download nano
+mkdir newnanoSource
+dpkg-deb -R nano_7.2-1+deb12u1_amd64.deb newnanoSource
+nano DEBIAN/postinst -> (добавить туда строчку) ln -s /usr/bin/nano /usr/bin/newnano
+dpkg-deb -b newnanoSource newnano.deb
+dpkg -i newnano.deb
+
+#20
+apt-get moo
+                 (__) 
+                 (oo) 
+           /------\/ 
+          / |    ||   
+         *  /\---/\ 
+            ~~   ~~   
+..."Have you mooed today?"...
