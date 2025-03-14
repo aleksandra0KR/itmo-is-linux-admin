@@ -103,7 +103,7 @@ w
 
 pvcreate /dev/sde1
 vgextend vg01 /dev/sde1
-lvextend -i 3 -l 100%VG /dev/vg01/lvol0
+lvextend -i 1 -l 100%VG /dev/vg01/lvol0
 
 # 18
 
