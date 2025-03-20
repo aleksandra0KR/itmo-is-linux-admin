@@ -32,3 +32,95 @@ systemctl show cron
 #6
 systemctl disable cron
 
+## Часть 3
+
+#1
+echo "
+[Unit]
+Description=Loggint service with data
+After=networking.service
+Requires=networking.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/usr/bin/logger \"$(/usr/bin/date)\""
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/mymsg.service
+
+#2
+systemctl enable mymsg.service
+
+# 3
+systemctl start mymsg.service
+
+## Часть 4
+
+#1
+journalctl
+
+#2
+journalctl -u mymsg.service
+
+#3
+journalctl -p3
+
+#4
+journalctl --disk-usage
+
+## Часть 5
+
+# 1
+fdisk /dev/sdb
+n
+p
+enter
+enter
+enter
+w
+
+mkfs.ext4 /dev/sdb1пше
+mkdir /mnt/mydata
+
+#2
+echo "
+[Unit]
+Description=Mount sdb1 and mydata
+
+[Mount]
+What=/dev/sdb1
+Where=/mnt/mydata
+Type=ext4
+Options=defaults
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/mnt-mydata.mount
+
+
+# 3
+systemctl enable mnt-mydata.mount
+systemctl start mnt-mydata.mount
+systemctl status mnt-mydata.mount
+
+## Часть 6
+
+#1
+echo "
+[Unit]
+Description=Loggint service with data
+After=networking.service
+Requires=networking.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/usr/bin/logger \"$(/usr/bin/date)\""
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/mymsg.service
+
+#2
+systemctl enable mnt-mydata.automount
+systemctl start mnt-mydata.automount
+systemctl status mnt-mydata.automount
