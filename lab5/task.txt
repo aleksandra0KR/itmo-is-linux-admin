@@ -25,7 +25,28 @@ taskset -p 520
   pid 520's current affinity mask: 1
 
 #5
+#!/bin/bash
+if [ -z "$1" ]; then
+  exit 1
+fi
 
+PID=$1
+
+GROUP_NAME="dynamic_process_$PID"
+
+cgcreate -g cpu:/$GROUP_NAME
+
+echo $PID >> /sys/fs/cgroup/$GROUP_NAME/cgroup.procs
+
+while true; do
+  script=$(mpstat 1 1 | awk '/Average:/ {print 100 - $12}')
+  if (( $(echo "$script < 20" | bc -l) )); then
+    echo "80000 100000" | tee /sys/fs/cgroup/cpu.max
+  elif (( $(echo "$script > 60" | bc -l) )); then
+    echo "30000 100000" | tee /sys/fs/cgroup/cpu.max
+  fi
+  sleep 5
+done
 
 #6
 unshare -u bash
@@ -62,5 +83,125 @@ ping google.com # в новом терминале
   rtt min/avg/max/mdev = 9.306/10.761/12.214/1.454 ms
 
 #10
+a)
+mkdir -p ~/overlay_/{lower,upper,work,merged}
+echo "Original text from LOWER" >> ~/overlay_/lower/84_original.txt
+mount -t overlay overlay -o lowerdir=/root/overlay_/lower,upperdir=/root/overlay_/upper,workdir=/root/overlay_/work /root/overlay_/merged
+
+b)
+rm ~/overlay_/merged/84_original.txt
+ls -hl ~/overlay_/upper
+итог 0
+c--------- 2 root root 0, 0 апр 11 00:42 84_original.txt
+rm ~/overlay_/upper/84_original.txt
+
+с)
+
+echo '
+#!/bin/bash
+UPPER_DIR="$HOME/overlay_upper"
+LOWER_DIR="$HOME/overlay_lower"
+MERGED_DIR="$HOME/overlay_merged"
+RESULT="84_audit.log"
+
+find "$UPPER_DIR" -type f -name '.wh.*' >> "$RESULT"
+
+for file in $(find "$LOWER_DIR" -type f -printf "%P\n"); do
+    merged_f="$MERGED_DIR/$file"
+    lower_f="$LOWER_DIR/$file"
+    if [ ! -f "$merged_f" ]; then
+        echo "No '$file' in merged" >> "$RESULT"
+    elif [ -f "$UPPER_DIR/.wh.${file}" ]; then
+        echo "'$file' deleted through whiteout" >> "$RESULT"
+    else
+        if ! cmp -s "$lower_f" "$merged_f"; then
+            echo "'$file' changed in merged" >> "$RESULT"
+        fi
+    fi
+done
+' >> 10c.sh
+
+d)
+При удалении файла в слое merged фактически не происходит его удаление, создается пустой файл в верхнем слое -> OverlayFS создает в upper файл с именем .wh.<имя_файла>, который указывает, что соответствующий файл в lower должен быть скрыт
 
 
+Нет. Каталог work необходим для функционирования OverlayFS для атомарных операций и кэширования метаданных
+Без него OverlayFS не сможет корректно работать, так как не будет иметь подходящего места для выполнения операций
+
+
+merged будет отображать только содержимое lower
+
+#11
+FROM python:3.9-slim
+
+ENV PYTHONUNBUFFERED=1
+
+RUN useradd -m user_84
+
+WORKDIR /app
+
+COPY requirements.txt /app/
+
+RUN pip install -r requirements.txt
+
+COPY . /app/
+
+RUN chown -R user_84:user_84 /app
+
+USER user_84
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+
+
+  requirements.txt (flask==2.3.3 -  зависимость flask)
+
+  .dockerignore
+
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.log
+.env
+*.git
+*.gitignore
+Dockerfile
+.dockerignore
+tests/
+
+
+#12
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "2084:80" 
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: aleksandra_db_pass
+    volumes:
+      - aleksandra-wp-data:/var/www/html
+    depends_on:
+      - mysql
+    restart: always
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: aleksandra_db_pass
+      MYSQL_DATABASE: wordpress
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: always
+
+volumes:
+  aleksandra-wp-data:
+  mysql-data:
