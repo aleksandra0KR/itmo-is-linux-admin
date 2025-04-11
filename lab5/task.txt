@@ -11,10 +11,8 @@ cgexec -g memory:memory_limit tail /dev/zero
 #3
 cgcreate -g io:/backup_limits
 cgset -r io.max="8:0 riops=1840 wiops=1340" backup_limits
-cgexec -g io:backup_limits dd if=/dev/zero of=/tmp/test_file bs=4k count=10000 oflag=direct
-  5.5 MB/s
-cgexec -g io:backup_limits dd if=/tmp/test_file of=/dev/null bs=4k count=10000 iflag=direct
-  7.5 MB/s
+cgexec -g io:backup_limits dd if=/dev/zero of=/tmp/test_file bs=8k count=10000 oflag=direct
+cgexec -g io:backup_limits dd if=/tmp/test_file of=/dev/null bs=8k count=10000 iflag=direct
 
 #4
 cgcreate -g cpuset:/cpu_set
