@@ -4,20 +4,20 @@ systemctl set-property user-84.slice CPUQuota=70%
 
 #2
 apt install cgroup-tools
-cgcreate -g memory:/memory_limit
-cgset -r memory.max=1340M memory_limit
-cgexec -g memory:memory_limit tail /dev/zero
+cgcreate -g memory:/memory_limit_set
+cgset -r memory.max=1340M memory_limit_set
+cgexec -g memory:memory_limit_set tail /dev/zero
 
 #3
-cgcreate -g io:/backup_limits
-cgset -r io.max="8:0 riops=1840 wiops=1340" backup_limits
-cgexec -g io:backup_limits dd if=/dev/zero of=/tmp/test_file bs=8k count=10000 oflag=direct
-cgexec -g io:backup_limits dd if=/tmp/test_file of=/dev/null bs=8k count=10000 iflag=direct
+cgcreate -g io:/backup_limit_set
+cgset -r io.max="8:0 riops=1840 wiops=1340" backup_limit_set
+cgexec -g io:backup_limit_set dd if=/dev/zero of=/tmp/test_file bs=8k count=10000 oflag=direct
+cgexec -g io:backup_limit_set dd if=/tmp/test_file of=/dev/null bs=8k count=10000 iflag=direct
 
 #4
-cgcreate -g cpuset:/cpu_set
-cgset -r cpuset.cpus=0 cpu_set
-(cgexec -g cpuset:cpu_set top)&
+cgcreate -g cpuset:/my_cpu_set
+cgset -r cpuset.cpus=0 my_cpu_set
+(cgexec -g cpuset:my_cpu_set top)&
     520
 taskset -p 520
   pid 520's current affinity mask: 1
